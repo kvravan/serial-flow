@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +7,8 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, FileText, Package, Truck, Settings, Send } from "lucide-react";
 import { ASN } from "@/types";
 import { SerialAssignment } from "./SerialAssignment";
+import { ASNSerialAssignmentPopup } from "./ASNSerialAssignmentPopup";
+import { useSerialStore } from "@/hooks/useSerialStore";
 
 interface ASNDetailProps {
   asn: ASN;
@@ -15,6 +17,23 @@ interface ASNDetailProps {
 
 export const ASNDetail = ({ asn, onClose }: ASNDetailProps) => {
   const [showSerialAssignment, setShowSerialAssignment] = useState(false);
+  const [showAssignmentPopup, setShowAssignmentPopup] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const { getSerialsByASN, getSerialsByPartNumber } = useSerialStore();
+  const [assignedCounts, setAssignedCounts] = useState<{[key: string]: number}>({});
+
+  // Calculate assigned serial counts for each item
+  React.useEffect(() => {
+    const calculateAssignedCounts = async () => {
+      const counts: {[key: string]: number} = {};
+      for (const item of asn.items) {
+        const assignedSerials = await getSerialsByPartNumber(item.part_number_id);
+        counts[item.id] = assignedSerials.filter(s => s.asn_id === asn.id && s.status === 'assigned').length;
+      }
+      setAssignedCounts(counts);
+    };
+    calculateAssignedCounts();
+  }, [asn.items, asn.id, getSerialsByPartNumber]);
 
   const getStatusVariant = (status: string) => {
     switch (status) {
@@ -34,6 +53,19 @@ export const ASNDetail = ({ asn, onClose }: ASNDetailProps) => {
       <SerialAssignment 
         asn={asn}
         onClose={() => setShowSerialAssignment(false)}
+      />
+    );
+  }
+
+  if (showAssignmentPopup && selectedItem) {
+    return (
+      <ASNSerialAssignmentPopup
+        asn={asn}
+        open={true}
+        onClose={() => {
+          setShowAssignmentPopup(false);
+          setSelectedItem(null);
+        }}
       />
     );
   }
@@ -125,22 +157,27 @@ export const ASNDetail = ({ asn, onClose }: ASNDetailProps) => {
                   <div className="text-sm text-muted-foreground">Total Items</div>
                 </div>
                 
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span>Total Quantity</span>
-                    <Badge variant="outline">
-                      {asn.items.reduce((sum, item) => sum + item.ship_quantity, 0)}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span>Assigned Serials</span>
-                    <Badge variant="success">24</Badge>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span>Pending Assignment</span>
-                    <Badge variant="warning">76</Badge>
-                  </div>
-                </div>
+                  <div className="space-y-3">
+                   <div className="flex items-center justify-between text-sm">
+                     <span>Total Quantity</span>
+                     <Badge variant="outline">
+                       {asn.items.reduce((sum, item) => sum + item.ship_quantity, 0)}
+                     </Badge>
+                   </div>
+                   <div className="flex items-center justify-between text-sm">
+                     <span>Assigned Serials</span>
+                     <Badge variant="success">
+                       {Object.values(assignedCounts).reduce((sum, count) => sum + count, 0)}
+                     </Badge>
+                   </div>
+                   <div className="flex items-center justify-between text-sm">
+                     <span>Pending Assignment</span>
+                     <Badge variant="warning">
+                       {asn.items.reduce((sum, item) => sum + item.ship_quantity, 0) - 
+                        Object.values(assignedCounts).reduce((sum, count) => sum + count, 0)}
+                     </Badge>
+                   </div>
+                 </div>
               </CardContent>
             </Card>
           </div>
@@ -172,17 +209,20 @@ export const ASNDetail = ({ asn, onClose }: ASNDetailProps) => {
                           <Badge variant="outline">{item.lots.length}</Badge>
                         </td>
                         <td className="p-4">
-                          <Badge variant="success">8</Badge>
-                        </td>
-                        <td className="p-4">
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => setShowSerialAssignment(true)}
-                          >
-                            Assign Serials
-                          </Button>
-                        </td>
+                           <Badge variant="success">{assignedCounts[item.id] || 0}</Badge>
+                         </td>
+                         <td className="p-4">
+                           <Button 
+                             variant="outline" 
+                             size="sm"
+                             onClick={() => {
+                               setSelectedItem(item);
+                               setShowAssignmentPopup(true);
+                             }}
+                           >
+                             Assign Serials
+                           </Button>
+                         </td>
                       </tr>
                     ))}
                   </tbody>
@@ -208,13 +248,13 @@ export const ASNDetail = ({ asn, onClose }: ASNDetailProps) => {
         {asn.status === 'draft' && (
           <>
             <Button 
-              variant="outline"
-              onClick={() => setShowSerialAssignment(true)}
-              className="flex items-center space-x-2"
-            >
-              <Settings className="h-4 w-4" />
-              <span>Assign Serials</span>
-            </Button>
+               variant="outline"
+               onClick={() => setShowSerialAssignment(true)}
+               className="flex items-center space-x-2"
+             >
+               <Settings className="h-4 w-4" />
+               <span>Manage Serials</span>
+             </Button>
             <Button className="flex items-center space-x-2">
               <Send className="h-4 w-4" />
               <span>Submit ASN</span>

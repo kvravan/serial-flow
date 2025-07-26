@@ -1,7 +1,26 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3, TrendingUp, Package, FileText } from "lucide-react";
+import { useSerialStore } from "@/hooks/useSerialStore";
+import { useEffect, useState } from "react";
 
 export const Analytics = () => {
+  const { getSerialCounts, store } = useSerialStore();
+  const [counts, setCounts] = useState({
+    total: 0,
+    unassigned: 0,
+    blocked: 0,
+    assigned: 0,
+  });
+
+  useEffect(() => {
+    const loadCounts = async () => {
+      const serialCounts = await getSerialCounts();
+      setCounts(serialCounts);
+    };
+    loadCounts();
+  }, [getSerialCounts, store]);
+
+  const assignmentRate = counts.total > 0 ? ((counts.assigned / counts.total) * 100).toFixed(1) : 0;
   return (
     <div className="space-y-6">
       <div>
@@ -18,12 +37,12 @@ export const Analytics = () => {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2,547</div>
-            <p className="text-xs text-muted-foreground">
-              <TrendingUp className="inline h-3 w-3 mr-1" />
-              +12% from last month
-            </p>
-          </CardContent>
+             <div className="text-2xl font-bold">{counts.total}</div>
+             <p className="text-xs text-muted-foreground">
+               <TrendingUp className="inline h-3 w-3 mr-1" />
+               Live from database
+             </p>
+           </CardContent>
         </Card>
 
         <Card>
@@ -32,12 +51,12 @@ export const Analytics = () => {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">47</div>
-            <p className="text-xs text-muted-foreground">
-              <TrendingUp className="inline h-3 w-3 mr-1" />
-              +3 this week
-            </p>
-          </CardContent>
+             <div className="text-2xl font-bold">{store?.asns.length || 0}</div>
+             <p className="text-xs text-muted-foreground">
+               <TrendingUp className="inline h-3 w-3 mr-1" />
+               Live from database
+             </p>
+           </CardContent>
         </Card>
 
         <Card>
@@ -46,12 +65,12 @@ export const Analytics = () => {
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">89.2%</div>
-            <p className="text-xs text-muted-foreground">
-              <TrendingUp className="inline h-3 w-3 mr-1" />
-              +2.1% efficiency
-            </p>
-          </CardContent>
+             <div className="text-2xl font-bold">{assignmentRate}%</div>
+             <p className="text-xs text-muted-foreground">
+               <TrendingUp className="inline h-3 w-3 mr-1" />
+               Assignment efficiency
+             </p>
+           </CardContent>
         </Card>
 
         <Card>
@@ -75,33 +94,33 @@ export const Analytics = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Assigned</span>
-                <div className="flex items-center space-x-2">
-                  <div className="w-32 bg-muted rounded-full h-2">
-                    <div className="bg-success h-2 rounded-full" style={{ width: '65%' }}></div>
-                  </div>
-                  <span className="text-sm font-medium">65%</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Unassigned</span>
-                <div className="flex items-center space-x-2">
-                  <div className="w-32 bg-muted rounded-full h-2">
-                    <div className="bg-secondary h-2 rounded-full" style={{ width: '25%' }}></div>
-                  </div>
-                  <span className="text-sm font-medium">25%</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Blocked</span>
-                <div className="flex items-center space-x-2">
-                  <div className="w-32 bg-muted rounded-full h-2">
-                    <div className="bg-warning h-2 rounded-full" style={{ width: '10%' }}></div>
-                  </div>
-                  <span className="text-sm font-medium">10%</span>
-                </div>
-              </div>
+               <div className="flex items-center justify-between">
+                 <span className="text-sm">Assigned</span>
+                 <div className="flex items-center space-x-2">
+                   <div className="w-32 bg-muted rounded-full h-2">
+                     <div className="bg-success h-2 rounded-full" style={{ width: `${counts.total > 0 ? (counts.assigned / counts.total) * 100 : 0}%` }}></div>
+                   </div>
+                   <span className="text-sm font-medium">{counts.total > 0 ? Math.round((counts.assigned / counts.total) * 100) : 0}%</span>
+                 </div>
+               </div>
+               <div className="flex items-center justify-between">
+                 <span className="text-sm">Unassigned</span>
+                 <div className="flex items-center space-x-2">
+                   <div className="w-32 bg-muted rounded-full h-2">
+                     <div className="bg-secondary h-2 rounded-full" style={{ width: `${counts.total > 0 ? (counts.unassigned / counts.total) * 100 : 0}%` }}></div>
+                   </div>
+                   <span className="text-sm font-medium">{counts.total > 0 ? Math.round((counts.unassigned / counts.total) * 100) : 0}%</span>
+                 </div>
+               </div>
+               <div className="flex items-center justify-between">
+                 <span className="text-sm">Blocked</span>
+                 <div className="flex items-center space-x-2">
+                   <div className="w-32 bg-muted rounded-full h-2">
+                     <div className="bg-warning h-2 rounded-full" style={{ width: `${counts.total > 0 ? (counts.blocked / counts.total) * 100 : 0}%` }}></div>
+                   </div>
+                   <span className="text-sm font-medium">{counts.total > 0 ? Math.round((counts.blocked / counts.total) * 100) : 0}%</span>
+                 </div>
+               </div>
             </div>
           </CardContent>
         </Card>

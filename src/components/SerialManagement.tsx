@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,55 +8,26 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Search, Plus, Download, Upload, Grid, List, Eye, Trash2 } from "lucide-react";
 import { Product, SerialInventory, SerialStatus } from "@/types";
 import { StatusBadge } from "./StatusBadge";
+import { useSerialStore } from "@/hooks/useSerialStore";
+import { AddSerialsForm } from "./AddSerialsForm";
 
 interface SerialManagementProps {
   product: Product;
   onClose: () => void;
 }
 
-// Mock serial data
-const mockSerials: SerialInventory[] = [
-  {
-    id: '1',
-    supplier_id: 'sup1',
-    buyer_id: 'buy1', 
-    part_number_id: '1',
-    serial_number: 'CPU001X7001',
-    status: 'assigned',
-    created_date: new Date('2024-01-15'),
-    updated_date: new Date('2024-01-20'),
-    created_by: 'admin',
-    updated_by: 'admin'
-  },
-  {
-    id: '2',
-    supplier_id: 'sup1',
-    buyer_id: 'buy1',
-    part_number_id: '1', 
-    serial_number: 'CPU001X7002',
-    status: 'unassigned',
-    expiry_date: new Date('2025-06-15'),
-    created_date: new Date('2024-01-16'),
-    updated_date: new Date('2024-01-16'),
-    created_by: 'admin',
-    updated_by: 'admin'
-  },
-  {
-    id: '3',
-    supplier_id: 'sup1',
-    buyer_id: 'buy1',
-    part_number_id: '1',
-    serial_number: 'CPU001X7003',
-    status: 'blocked',
-    created_date: new Date('2024-01-17'),
-    updated_date: new Date('2024-01-22'),
-    created_by: 'admin',
-    updated_by: 'admin'
-  }
-];
-
 export const SerialManagement = ({ product, onClose }: SerialManagementProps) => {
-  const [serials, setSerials] = useState(mockSerials);
+  const [serials, setSerials] = useState<SerialInventory[]>([]);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const { getSerialsByPartNumber, store } = useSerialStore();
+
+  useEffect(() => {
+    const loadSerials = async () => {
+      const productSerials = await getSerialsByPartNumber(product.id);
+      setSerials(productSerials);
+    };
+    loadSerials();
+  }, [product.id, getSerialsByPartNumber, store]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<SerialStatus | "all">("all");
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
@@ -68,8 +39,25 @@ export const SerialManagement = ({ product, onClose }: SerialManagementProps) =>
   });
 
   const handleDeleteSerial = (serialId: string) => {
+    // TODO: Implement delete functionality with serialStore
     setSerials(serials.filter(s => s.id !== serialId));
   };
+
+  const statusCounts = {
+    total: serials.length,
+    assigned: serials.filter(s => s.status === 'assigned').length,
+    blocked: serials.filter(s => s.status === 'blocked').length,
+    unassigned: serials.filter(s => s.status === 'unassigned').length,
+  };
+
+  if (showAddForm) {
+    return (
+      <AddSerialsForm
+        product={product}
+        onClose={() => setShowAddForm(false)}
+      />
+    );
+  }
 
   const SerialCard = ({ serial }: { serial: SerialInventory }) => (
     <Card className="hover:shadow-md transition-shadow">
@@ -173,10 +161,10 @@ export const SerialManagement = ({ product, onClose }: SerialManagementProps) =>
             Import
           </Button>
           
-          <Button size="sm">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Serials
-          </Button>
+           <Button size="sm" onClick={() => setShowAddForm(true)}>
+             <Plus className="h-4 w-4 mr-2" />
+             Add Serials
+           </Button>
         </div>
       </div>
 
@@ -190,29 +178,29 @@ export const SerialManagement = ({ product, onClose }: SerialManagementProps) =>
         <TabsContent value="overview" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card>
-              <CardContent className="p-6">
-                <div className="text-2xl font-bold">142</div>
-                <p className="text-xs text-muted-foreground">Total Serials</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6">
-                <div className="text-2xl font-bold text-success">89</div>
-                <p className="text-xs text-muted-foreground">Assigned</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6">
-                <div className="text-2xl font-bold text-warning">12</div>
-                <p className="text-xs text-muted-foreground">Blocked</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6">
-                <div className="text-2xl font-bold">53</div>
-                <p className="text-xs text-muted-foreground">Available</p>
-              </CardContent>
-            </Card>
+               <CardContent className="p-6">
+                 <div className="text-2xl font-bold">{statusCounts.total}</div>
+                 <p className="text-xs text-muted-foreground">Total Serials</p>
+               </CardContent>
+             </Card>
+             <Card>
+               <CardContent className="p-6">
+                 <div className="text-2xl font-bold text-success">{statusCounts.assigned}</div>
+                 <p className="text-xs text-muted-foreground">Assigned</p>
+               </CardContent>
+             </Card>
+             <Card>
+               <CardContent className="p-6">
+                 <div className="text-2xl font-bold text-warning">{statusCounts.blocked}</div>
+                 <p className="text-xs text-muted-foreground">Blocked</p>
+               </CardContent>
+             </Card>
+             <Card>
+               <CardContent className="p-6">
+                 <div className="text-2xl font-bold">{statusCounts.unassigned}</div>
+                 <p className="text-xs text-muted-foreground">Available</p>
+               </CardContent>
+             </Card>
           </div>
         </TabsContent>
 
@@ -281,7 +269,7 @@ export const SerialManagement = ({ product, onClose }: SerialManagementProps) =>
               <p className="text-muted-foreground mb-4">
                 Try adjusting your search criteria or add new serial numbers.
               </p>
-              <Button>Add Serial Numbers</Button>
+              <Button onClick={() => setShowAddForm(true)}>Add Serial Numbers</Button>
             </div>
           )}
         </TabsContent>
