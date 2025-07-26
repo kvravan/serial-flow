@@ -232,6 +232,42 @@ class SerialStoreManager {
                 quantity: 5
               }
             ]
+          },
+          {
+            id: 'item2',
+            asn_id: '1',
+            part_number_id: '2',
+            buyer_part_number: 'MEM-002-DDR5',
+            ship_quantity: 20,
+            lots: [
+              {
+                id: 'lot3',
+                item_id: 'item2',
+                lot_number: 'LOT003',
+                quantity: 15
+              },
+              {
+                id: 'lot4',
+                item_id: 'item2',
+                lot_number: 'LOT004',
+                quantity: 5
+              }
+            ]
+          },
+          {
+            id: 'item3',
+            asn_id: '1',
+            part_number_id: '3',
+            buyer_part_number: 'SSD-003-NVMe',
+            ship_quantity: 8,
+            lots: [
+              {
+                id: 'lot5',
+                item_id: 'item3',
+                lot_number: 'LOT005',
+                quantity: 8
+              }
+            ]
           }
         ]
       },

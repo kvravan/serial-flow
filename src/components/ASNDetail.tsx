@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, FileText, Package, Truck, Settings, Send } from "lucide-react";
 import { ASN } from "@/types";
 import { SerialAssignment } from "./SerialAssignment";
-import { ASNSerialAssignmentPopup } from "./ASNSerialAssignmentPopup";
+import { ASNManageSerials } from "./ASNManageSerials";
 import { useSerialStore } from "@/hooks/useSerialStore";
 
 interface ASNDetailProps {
@@ -57,9 +57,9 @@ export const ASNDetail = ({ asn, onClose }: ASNDetailProps) => {
     );
   }
 
-  if (showAssignmentPopup && selectedItem) {
+  if (showAssignmentPopup) {
     return (
-      <ASNSerialAssignmentPopup
+      <ASNManageSerials
         asn={asn}
         open={true}
         onClose={() => {
@@ -88,8 +88,7 @@ export const ASNDetail = ({ asn, onClose }: ASNDetailProps) => {
       <Tabs defaultValue="header" className="space-y-4">
         <TabsList>
           <TabsTrigger value="header">Header</TabsTrigger>
-          <TabsTrigger value="items">Items</TabsTrigger>
-          <TabsTrigger value="packing">Packing</TabsTrigger>
+          <TabsTrigger value="summary">Summary</TabsTrigger>
         </TabsList>
 
         <TabsContent value="header" className="space-y-4">
@@ -183,10 +182,10 @@ export const ASNDetail = ({ asn, onClose }: ASNDetailProps) => {
           </div>
         </TabsContent>
 
-        <TabsContent value="items" className="space-y-4">
+        <TabsContent value="summary" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>ASN Items</CardTitle>
+              <CardTitle>ASN Items Summary</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               <div className="overflow-x-auto">
@@ -197,7 +196,6 @@ export const ASNDetail = ({ asn, onClose }: ASNDetailProps) => {
                       <th className="p-4 text-sm font-medium">Ship Quantity</th>
                       <th className="p-4 text-sm font-medium">Lots</th>
                       <th className="p-4 text-sm font-medium">Assigned Serials</th>
-                      <th className="p-4 text-sm font-medium">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -211,34 +209,11 @@ export const ASNDetail = ({ asn, onClose }: ASNDetailProps) => {
                         <td className="p-4">
                            <Badge variant="success">{assignedCounts[item.id] || 0}</Badge>
                          </td>
-                         <td className="p-4">
-                           <Button 
-                             variant="outline" 
-                             size="sm"
-                             onClick={() => {
-                               setSelectedItem(item);
-                               setShowAssignmentPopup(true);
-                             }}
-                           >
-                             Assign Serials
-                           </Button>
-                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="packing">
-          <Card>
-            <CardHeader>
-              <CardTitle>Packing Structure</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Packing hierarchy and container management will be displayed here.</p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -249,7 +224,10 @@ export const ASNDetail = ({ asn, onClose }: ASNDetailProps) => {
           <>
             <Button 
                variant="outline"
-               onClick={() => setShowSerialAssignment(true)}
+               onClick={() => {
+                 setSelectedItem(null);
+                 setShowAssignmentPopup(true);
+               }}
                className="flex items-center space-x-2"
              >
                <Settings className="h-4 w-4" />
