@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Search, Plus, Package, Eye } from "lucide-react";
 import { Product } from "@/types";
 import { ProductDetail } from "./ProductDetail";
+import { AddSerialsForm } from "./AddSerialsForm";
+import { useSerialStore } from "@/hooks/useSerialStore";
 
 // Mock data
 const mockProducts: Product[] = [
@@ -52,6 +54,7 @@ export const ProductMaster = ({ onProductSelect }: ProductMasterProps) => {
   const [products, setProducts] = useState(mockProducts);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [showAddSerials, setShowAddSerials] = useState<Product | null>(null);
 
   const filteredProducts = products.filter(product =>
     product.buyer_part_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -68,11 +71,29 @@ export const ProductMaster = ({ onProductSelect }: ProductMasterProps) => {
     setSelectedProduct(null);
   };
 
+  const handleShowAddSerials = (product: Product) => {
+    setShowAddSerials(product);
+  };
+
+  const handleCloseAddSerials = () => {
+    setShowAddSerials(null);
+  };
+
+  if (showAddSerials) {
+    return (
+      <AddSerialsForm 
+        product={showAddSerials} 
+        onClose={handleCloseAddSerials}
+      />
+    );
+  }
+
   if (selectedProduct) {
     return (
       <ProductDetail 
         product={selectedProduct} 
         onClose={handleCloseDetail}
+        onAddSerials={handleShowAddSerials}
       />
     );
   }

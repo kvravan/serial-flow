@@ -1,19 +1,42 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Package, Settings, BarChart3 } from "lucide-react";
+import { ArrowLeft, Package, Settings, BarChart3, Plus } from "lucide-react";
 import { Product } from "@/types";
 import { SerialManagement } from "./SerialManagement";
+import { useSerialStore } from "@/hooks/useSerialStore";
 
 interface ProductDetailProps {
   product: Product;
   onClose: () => void;
+  onAddSerials?: (product: Product) => void;
 }
 
-export const ProductDetail = ({ product, onClose }: ProductDetailProps) => {
+export const ProductDetail = ({ product, onClose, onAddSerials }: ProductDetailProps) => {
   const [showSerialManagement, setShowSerialManagement] = useState(false);
+  const { getSerialsByPartNumber, getSerialCounts } = useSerialStore();
+  const [serialStats, setSerialStats] = useState({
+    total: 0,
+    unassigned: 0,
+    blocked: 0,
+    assigned: 0
+  });
+
+  useEffect(() => {
+    const loadSerialStats = async () => {
+      const serials = await getSerialsByPartNumber(product.id);
+      setSerialStats({
+        total: serials.length,
+        unassigned: serials.filter(s => s.status === 'unassigned').length,
+        blocked: serials.filter(s => s.status === 'blocked').length,
+        assigned: serials.filter(s => s.status === 'assigned').length
+      });
+    };
+    
+    loadSerialStats();
+  }, [product.id, getSerialsByPartNumber]);
 
   if (showSerialManagement) {
     return (
@@ -109,15 +132,15 @@ export const ProductDetail = ({ product, onClose }: ProductDetailProps) => {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center p-4 bg-muted/50 rounded-lg">
-                <div className="text-2xl font-bold text-primary">142</div>
+                <div className="text-2xl font-bold text-primary">{serialStats.total}</div>
                 <div className="text-sm text-muted-foreground">Total Serials</div>
               </div>
               <div className="text-center p-4 bg-success/10 rounded-lg">
-                <div className="text-2xl font-bold text-success">89</div>
+                <div className="text-2xl font-bold text-success">{serialStats.assigned}</div>
                 <div className="text-sm text-muted-foreground">Assigned</div>
               </div>
               <div className="text-center p-4 bg-secondary/50 rounded-lg">
-                <div className="text-2xl font-bold">53</div>
+                <div className="text-2xl font-bold">{serialStats.unassigned}</div>
                 <div className="text-sm text-muted-foreground">Available</div>
               </div>
             </div>
@@ -125,15 +148,15 @@ export const ProductDetail = ({ product, onClose }: ProductDetailProps) => {
             <div className="space-y-3">
               <div className="flex items-center justify-between text-sm">
                 <span>Blocked</span>
-                <Badge variant="warning">12</Badge>
+                <Badge variant="secondary">{serialStats.blocked}</Badge>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span>With Expiry Date</span>
-                <Badge variant="outline">8</Badge>
+                <span>Unassigned</span>
+                <Badge variant="outline">{serialStats.unassigned}</Badge>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span>With Custom Attributes</span>
-                <Badge variant="outline">24</Badge>
+                <span>Assigned</span>
+                <Badge variant="default">{serialStats.assigned}</Badge>
               </div>
             </div>
           </CardContent>
@@ -141,6 +164,16 @@ export const ProductDetail = ({ product, onClose }: ProductDetailProps) => {
       </div>
 
       <div className="flex justify-end space-x-3 pt-6 border-t">
+        {onAddSerials && (
+          <Button 
+            variant="outline"
+            onClick={() => onAddSerials(product)}
+            className="flex items-center space-x-2"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Add Serials</span>
+          </Button>
+        )}
         <Button 
           variant="outline"
           onClick={() => setShowSerialManagement(true)}
@@ -150,10 +183,7 @@ export const ProductDetail = ({ product, onClose }: ProductDetailProps) => {
           <span>Manage Serials</span>
         </Button>
         <Button variant="outline" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button>
-          Save Changes
+          Close
         </Button>
       </div>
     </div>

@@ -7,6 +7,7 @@ export interface SerialInventory {
   part_number_id: string;
   serial_number: string;
   status: SerialStatus;
+  asn_id?: string;
   attributes_json?: Record<string, any>;
   parent_serial_id?: string;
   parent_serial_number?: string;
