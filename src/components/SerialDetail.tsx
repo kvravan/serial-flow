@@ -38,8 +38,6 @@ export const SerialDetail = ({ serial: initialSerial, onClose }: SerialDetailPro
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
-  console.log('SerialDetail rendered:', { serial: initialSerial, isEditing });
-
   // Check if serial can be edited (only unassigned and blocked serials)
   const canEdit = serial.status === 'unassigned' || serial.status === 'blocked';
 
