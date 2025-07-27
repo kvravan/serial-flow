@@ -164,16 +164,6 @@ export const ProductDetail = ({ product, onClose, onAddSerials }: ProductDetailP
       </div>
 
       <div className="flex justify-end space-x-3 pt-6 border-t">
-        {onAddSerials && (
-          <Button 
-            variant="outline"
-            onClick={() => onAddSerials(product)}
-            className="flex items-center space-x-2"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Add Serials</span>
-          </Button>
-        )}
         <Button 
           variant="outline"
           onClick={() => setShowSerialManagement(true)}

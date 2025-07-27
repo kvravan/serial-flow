@@ -40,6 +40,10 @@ export const useSerialStore = () => {
     await serialStore.addSerials(serials);
   };
 
+  const updateSerial = async (serial: SerialInventory) => {
+    await serialStore.updateSerial(serial);
+  };
+
   const updateSerialStatus = async (serialId: string, status: SerialInventory['status'], asnId?: string) => {
     await serialStore.updateSerialStatus(serialId, status, asnId);
   };
@@ -64,6 +68,7 @@ export const useSerialStore = () => {
     store,
     loading,
     addSerials,
+    updateSerial,
     updateSerialStatus,
     getSerialsByStatus,
     getSerialsByASN,

@@ -10,6 +10,8 @@ import { Product, SerialInventory, SerialStatus } from "@/types";
 import { StatusBadge } from "./StatusBadge";
 import { useSerialStore } from "@/hooks/useSerialStore";
 import { AddSerialsForm } from "./AddSerialsForm";
+import { ImportSerialsForm } from "./ImportSerialsForm";
+import { SerialDetail } from "./SerialDetail";
 
 interface SerialManagementProps {
   product: Product;
@@ -19,6 +21,10 @@ interface SerialManagementProps {
 export const SerialManagement = ({ product, onClose }: SerialManagementProps) => {
   const [serials, setSerials] = useState<SerialInventory[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showImportForm, setShowImportForm] = useState(false);
+  const [selectedSerial, setSelectedSerial] = useState<SerialInventory | null>(null);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [previousViewMode, setPreviousViewMode] = useState<"grid" | "table">("grid");
   const { getSerialsByPartNumber, store } = useSerialStore();
 
   useEffect(() => {
@@ -54,10 +60,46 @@ export const SerialManagement = ({ product, onClose }: SerialManagementProps) =>
     return (
       <AddSerialsForm
         product={product}
-        onClose={() => setShowAddForm(false)}
+        onClose={() => {
+          setShowAddForm(false);
+          setActiveTab("serials");
+        }}
       />
     );
   }
+
+  if (showImportForm) {
+    return (
+      <ImportSerialsForm
+        product={product}
+        onClose={() => {
+          setShowImportForm(false);
+          setActiveTab("serials");
+        }}
+      />
+    );
+  }
+
+  if (selectedSerial) {
+    return (
+      <SerialDetail
+        serial={selectedSerial}
+        onClose={() => {
+          console.log('SerialDetail closed, returning to tab:', activeTab, 'viewMode:', previousViewMode);
+          setSelectedSerial(null);
+          setViewMode(previousViewMode);
+        }}
+      />
+    );
+  }
+
+  const handleViewSerial = (serial: SerialInventory, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('View serial clicked:', serial.id, 'current tab:', activeTab, 'viewMode:', viewMode);
+    setPreviousViewMode(viewMode);
+    setSelectedSerial(serial);
+  };
 
   const SerialCard = ({ serial }: { serial: SerialInventory }) => (
     <Card className="hover:shadow-md transition-shadow">
@@ -76,17 +118,26 @@ export const SerialManagement = ({ product, onClose }: SerialManagementProps) =>
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>Created: {serial.created_date.toLocaleDateString()}</span>
           <div className="flex space-x-1">
-            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-              <Eye className="h-3 w-3" />
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 w-8 p-0 hover:bg-primary/10"
+              onClick={(e) => handleViewSerial(serial, e)}
+            >
+              <Eye className="h-4 w-4" />
             </Button>
             {serial.status === 'unassigned' && (
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-                onClick={() => handleDeleteSerial(serial.id)}
+                className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleDeleteSerial(serial.id);
+                }}
               >
-                <Trash2 className="h-3 w-3" />
+                <Trash2 className="h-4 w-4" />
               </Button>
             )}
           </div>
@@ -156,19 +207,32 @@ export const SerialManagement = ({ product, onClose }: SerialManagementProps) =>
             </Button>
           </div>
           
-          <Button variant="outline" size="sm">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => {
+              console.log('Import clicked');
+              setShowImportForm(true);
+            }}
+          >
             <Upload className="h-4 w-4 mr-2" />
             Import
           </Button>
           
-           <Button size="sm" onClick={() => setShowAddForm(true)}>
+           <Button 
+             size="sm" 
+             onClick={() => {
+               console.log('Add Serials clicked');
+               setShowAddForm(true);
+             }}
+           >
              <Plus className="h-4 w-4 mr-2" />
              Add Serials
            </Button>
         </div>
       </div>
 
-      <Tabs defaultValue="overview" className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="serials">Serial Numbers</TabsTrigger>
@@ -238,18 +302,27 @@ export const SerialManagement = ({ product, onClose }: SerialManagementProps) =>
                           <td className="p-4 text-sm">{serial.created_date.toLocaleDateString()}</td>
                           <td className="p-4">
                             <div className="flex space-x-1">
-                              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                                <Eye className="h-3 w-3" />
-                              </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-8 w-8 p-0 hover:bg-primary/10"
+                              onClick={(e) => handleViewSerial(serial, e)}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
                               {serial.status === 'unassigned' && (
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-                                  onClick={() => handleDeleteSerial(serial.id)}
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleDeleteSerial(serial.id);
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
                               )}
                             </div>
                           </td>
@@ -269,7 +342,10 @@ export const SerialManagement = ({ product, onClose }: SerialManagementProps) =>
               <p className="text-muted-foreground mb-4">
                 Try adjusting your search criteria or add new serial numbers.
               </p>
-              <Button onClick={() => setShowAddForm(true)}>Add Serial Numbers</Button>
+              <Button onClick={() => {
+                setShowAddForm(true);
+                setActiveTab("serials");
+              }}>Add Serial Numbers</Button>
             </div>
           )}
         </TabsContent>

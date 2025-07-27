@@ -36,10 +36,6 @@ export const AddSerialsForm = ({ product, onClose }: AddSerialsFormProps) => {
   const [bulkExpiryDate, setBulkExpiryDate] = useState<Date>();
   const [bulkAttributes, setBulkAttributes] = useState<{key: string, value: string}[]>([]);
   
-  // CSV import form
-  const [csvFile, setCsvFile] = useState<File | null>(null);
-  const [csvExpiryDate, setCsvExpiryDate] = useState<Date>();
-  const [csvAttributes, setCsvAttributes] = useState<{key: string, value: string}[]>([]);
   
   const [loading, setLoading] = useState(false);
 
@@ -168,75 +164,6 @@ export const AddSerialsForm = ({ product, onClose }: AddSerialsFormProps) => {
     }
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file && file.type === 'text/csv') {
-      setCsvFile(file);
-    } else {
-      toast({
-        title: "Invalid file",
-        description: "Please select a valid CSV file.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleCsvImport = async () => {
-    if (!csvFile) return;
-    
-    setLoading(true);
-    try {
-      const text = await csvFile.text();
-      const lines = text.trim().split('\n').filter(line => line.trim());
-      const serials: SerialInventory[] = [];
-      
-      for (const line of lines) {
-        const trimmedLine = line.trim();
-        if (trimmedLine) {
-          serials.push({
-            id: `serial_${Date.now()}_${Math.random()}`,
-            supplier_id: 'sup1',
-            buyer_id: 'buy1',
-            part_number_id: product.id,
-            serial_number: trimmedLine,
-            status: 'unassigned',
-            expiry_date: csvExpiryDate,
-            attributes_json: createAttributesJson(csvAttributes),
-            created_date: new Date(),
-            updated_date: new Date(),
-            created_by: 'user',
-            updated_by: 'user'
-          });
-        }
-      }
-      
-      if (serials.length === 0) {
-        toast({
-          title: "No data",
-          description: "No valid serial numbers found in the file.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      await addSerials(serials);
-      setCsvFile(null);
-      setCsvExpiryDate(undefined);
-      setCsvAttributes([]);
-      toast({
-        title: "Serials imported",
-        description: `${serials.length} serial numbers imported successfully.`
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to import serial numbers.",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const getBulkPreview = () => {
     const start = parseInt(startNumber);
@@ -275,7 +202,7 @@ export const AddSerialsForm = ({ product, onClose }: AddSerialsFormProps) => {
       </div>
 
       <Tabs defaultValue="single" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="single" className="flex items-center space-x-2">
             <Plus className="h-4 w-4" />
             <span>Single Entry</span>
@@ -283,10 +210,6 @@ export const AddSerialsForm = ({ product, onClose }: AddSerialsFormProps) => {
           <TabsTrigger value="bulk" className="flex items-center space-x-2">
             <Hash className="h-4 w-4" />
             <span>Bulk Generate</span>
-          </TabsTrigger>
-          <TabsTrigger value="csv" className="flex items-center space-x-2">
-            <FileText className="h-4 w-4" />
-            <span>CSV Import</span>
           </TabsTrigger>
         </TabsList>
 
@@ -508,110 +431,6 @@ export const AddSerialsForm = ({ product, onClose }: AddSerialsFormProps) => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="csv">
-          <Card>
-            <CardHeader>
-              <CardTitle>Import from CSV</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="csv-file">Upload CSV File</Label>
-                <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
-                  <Upload className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
-                  <div className="space-y-2">
-                    <Input
-                      id="csv-file"
-                      type="file"
-                      accept=".csv"
-                      onChange={handleFileUpload}
-                      className="w-auto mx-auto"
-                    />
-                    <p className="text-sm text-muted-foreground">
-                      Select a CSV file with one serial number per line
-                    </p>
-                  </div>
-                </div>
-                {csvFile && (
-                  <div className="text-sm text-muted-foreground">
-                    Selected file: {csvFile.name}
-                  </div>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Expiry Date (Optional)</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !csvExpiryDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {csvExpiryDate ? format(csvExpiryDate, "PPP") : "Select expiry date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={csvExpiryDate}
-                      onSelect={setCsvExpiryDate}
-                      initialFocus
-                      className={cn("p-3 pointer-events-auto")}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label>Custom Attributes (Optional)</Label>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => addAttribute(setCsvAttributes)}
-                  >
-                    <Plus className="h-3 w-3 mr-1" />
-                    Add
-                  </Button>
-                </div>
-                {csvAttributes.map((attr, index) => (
-                  <div key={index} className="flex space-x-2">
-                    <Input
-                      placeholder="Key"
-                      value={attr.key}
-                      onChange={(e) => updateAttribute(index, 'key', e.target.value, setCsvAttributes)}
-                    />
-                    <Input
-                      placeholder="Value"
-                      value={attr.value}
-                      onChange={(e) => updateAttribute(index, 'value', e.target.value, setCsvAttributes)}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => removeAttribute(index, setCsvAttributes)}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-              
-              <Button 
-                onClick={handleCsvImport} 
-                disabled={!csvFile || loading}
-                className="w-full"
-              >
-                {loading ? "Importing..." : "Import Serial Numbers"}
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
       </Tabs>
     </div>
   );

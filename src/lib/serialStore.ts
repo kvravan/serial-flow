@@ -92,6 +92,15 @@ class SerialStoreManager {
     await this.setStore(store);
   }
 
+  async updateSerial(updatedSerial: SerialInventory): Promise<void> {
+    const store = await this.getStore();
+    const index = store.serials.findIndex(s => s.id === updatedSerial.id);
+    if (index !== -1) {
+      store.serials[index] = updatedSerial;
+      await this.setStore(store);
+    }
+  }
+
   async updateSerialStatus(serialId: string, status: SerialInventory['status'], asnId?: string): Promise<void> {
     const store = await this.getStore();
     const serial = store.serials.find(s => s.id === serialId);
