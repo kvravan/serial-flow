@@ -1,4 +1,7 @@
 import { SerialInventory, ASN, Product } from '@/types';
+import { serialProductsData } from '@/resources/serialProducts';
+import { serialInventoryData } from '@/resources/serialInventory';
+import { serialASNsData } from '@/resources/serialASNs';
 
 // Global State Interface
 export interface GlobalState {
@@ -439,128 +442,17 @@ class GlobalStoreManager {
     return filtered;
   }
 
-  // Default data methods (moved from serialStore.ts)
+  // Default data methods using TypeScript files from resources
   private getDefaultSerials(): SerialInventory[] {
-    return [
-      {
-        id: '1',
-        supplier_id: 'sup1',
-        buyer_id: 'buy1',
-        part_number_id: '1',
-        serial_number: 'CPU001X7001',
-        status: 'blocked',
-        asn_id: '1',
-        created_date: new Date('2024-01-15'),
-        updated_date: new Date('2024-01-20'),
-        created_by: 'admin',
-        updated_by: 'admin'
-      },
-      {
-        id: '2',
-        supplier_id: 'sup1',
-        buyer_id: 'buy1',
-        part_number_id: '1',
-        serial_number: 'CPU001X7002',
-        status: 'assigned',
-        asn_id: '1',
-        created_date: new Date('2024-01-16'),
-        updated_date: new Date('2024-01-21'),
-        created_by: 'admin',
-        updated_by: 'admin'
-      },
-      {
-        id: '3',
-        supplier_id: 'sup1',
-        buyer_id: 'buy1',
-        part_number_id: '1',
-        serial_number: 'CPU001X7003',
-        status: 'unassigned',
-        created_date: new Date('2024-01-17'),
-        updated_date: new Date('2024-01-17'),
-        created_by: 'admin',
-        updated_by: 'admin'
-      },
-      {
-        id: '4',
-        supplier_id: 'sup1',
-        buyer_id: 'buy1',
-        part_number_id: '1',
-        serial_number: 'CPU001X7004',
-        status: 'unassigned',
-        created_date: new Date('2024-01-18'),
-        updated_date: new Date('2024-01-18'),
-        created_by: 'admin',
-        updated_by: 'admin'
-      },
-      {
-        id: '5',
-        supplier_id: 'sup1',
-        buyer_id: 'buy1',
-        part_number_id: '2',
-        serial_number: 'MEM002DDR5001',
-        status: 'unassigned',
-        created_date: new Date('2024-01-19'),
-        updated_date: new Date('2024-01-19'),
-        created_by: 'admin',
-        updated_by: 'admin'
-      }
-    ];
+    return serialInventoryData;
   }
 
   private getDefaultASNs(): ASN[] {
-    return [
-      {
-        id: '1',
-        supplier_id: 'sup1',
-        buyer_id: 'buy1',
-        asn_number: 'ASN001',
-        status: 'draft',
-        ship_date: new Date('2024-02-01'),
-        delivery_date: new Date('2024-02-05'),
-        created_date: new Date('2024-01-25'),
-        updated_date: new Date('2024-01-25'),
-        items: []
-      },
-      {
-        id: '2',
-        supplier_id: 'sup2',
-        buyer_id: 'buy2',
-        asn_number: 'ASN002',
-        status: 'submitted',
-        ship_date: new Date('2024-02-03'),
-        delivery_date: new Date('2024-02-07'),
-        created_date: new Date('2024-01-27'),
-        updated_date: new Date('2024-01-30'),
-        items: []
-      }
-    ];
+    return serialASNsData;
   }
 
   private getDefaultProducts(): Product[] {
-    return [
-      {
-        id: '1',
-        buyer_identifier: 'ACME-CPU-001',
-        supplier_identifier: 'INTEL-i7-13700K',
-        buyer_part_number: 'CPU001',
-        description: 'Intel Core i7-13700K Processor',
-        price: 450.99,
-        dimensions: '37.5 x 37.5 x 7.4 mm',
-        created_date: new Date('2024-01-01'),
-        updated_date: new Date('2024-01-01')
-      },
-      {
-        id: '2',
-        buyer_identifier: 'ACME-MEM-002',
-        supplier_identifier: 'CORSAIR-32GB-DDR5',
-        buyer_part_number: 'MEM002',
-        description: 'Corsair Vengeance 32GB DDR5-5600',
-        price: 189.99,
-        dimensions: '133.35 x 7.0 x 34.1 mm',
-        created_date: new Date('2024-01-02'),
-        updated_date: new Date('2024-01-02')
-      }
-    ];
+    return serialProductsData;
   }
 }
 
