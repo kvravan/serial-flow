@@ -1,97 +1,72 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, Package, Eye } from "lucide-react";
+import { Search, Plus, Package, Eye, GitBranch } from "lucide-react";
 import { Product } from "@/types";
 import { ProductDetail } from "./ProductDetail";
 import { AddSerialsForm } from "./AddSerialsForm";
-import { useSerialStore } from "@/hooks/useSerialStore";
-
-// Mock data
-const mockProducts: Product[] = [
-  {
-    id: '1',
-    buyer_identifier: 'ACME_CORP',
-    supplier_identifier: 'TECH_SUPPLY_001',
-    buyer_part_number: 'CPU-001-X7',
-    description: 'High-performance processor unit with enhanced cooling',
-    price: 299.99,
-    dimensions: '40mm x 40mm x 5mm',
-    created_date: new Date('2024-01-15'),
-    updated_date: new Date('2024-01-20')
-  },
-  {
-    id: '2',
-    buyer_identifier: 'ACME_CORP',
-    supplier_identifier: 'TECH_SUPPLY_001', 
-    buyer_part_number: 'MEM-002-DDR5',
-    description: 'DDR5 Memory Module 32GB',
-    price: 189.99,
-    dimensions: '133mm x 30mm x 5mm',
-    created_date: new Date('2024-01-10'),
-    updated_date: new Date('2024-01-18')
-  },
-  {
-    id: '3',
-    buyer_identifier: 'BETA_SYSTEMS',
-    supplier_identifier: 'COMPONENT_PLUS',
-    buyer_part_number: 'SSD-003-NVMe',
-    description: 'NVMe SSD 1TB High Speed Storage',
-    price: 149.99,
-    dimensions: '80mm x 22mm x 2.38mm',
-    created_date: new Date('2024-01-12'),
-    updated_date: new Date('2024-01-22')
-  }
-];
+import { AddChildPartsForm } from "./AddChildPartsForm";
+import { useGlobalState } from "@/hooks/useGlobalState";
 
 interface ProductMasterProps {
   onProductSelect?: (product: Product) => void;
 }
 
 export const ProductMaster = ({ onProductSelect }: ProductMasterProps) => {
-  const [products, setProducts] = useState(mockProducts);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [showAddSerials, setShowAddSerials] = useState<Product | null>(null);
-
-  const filteredProducts = products.filter(product =>
-    product.buyer_part_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.buyer_identifier.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const { ui, actions, computed, system } = useGlobalState();
+  
+  const filteredProducts = computed.getFilteredProducts();
 
   const handleProductClick = (product: Product) => {
-    setSelectedProduct(product);
+    actions.setSelectedProduct(product);
     onProductSelect?.(product);
   };
 
   const handleCloseDetail = () => {
-    setSelectedProduct(null);
+    actions.setSelectedProduct(null);
   };
 
   const handleShowAddSerials = (product: Product) => {
-    setShowAddSerials(product);
+    actions.setSelectedProduct(product);
+    actions.toggleModal('addSerial', true);
   };
 
   const handleCloseAddSerials = () => {
-    setShowAddSerials(null);
+    actions.toggleModal('addSerial', false);
   };
 
-  if (showAddSerials) {
+  const handleShowAddChildParts = (product: Product) => {
+    actions.setSelectedProduct(product);
+    actions.toggleModal('uploadChildSerials', true);
+  };
+
+  const handleCloseAddChildParts = () => {
+    actions.toggleModal('uploadChildSerials', false);
+  };
+
+  if (ui.modals.uploadChildSerials && ui.selectedProduct) {
+    return (
+      <AddChildPartsForm
+        product={ui.selectedProduct}
+        onClose={handleCloseAddChildParts}
+      />
+    );
+  }
+
+  if (ui.modals.addSerial && ui.selectedProduct) {
     return (
       <AddSerialsForm 
-        product={showAddSerials} 
+        product={ui.selectedProduct} 
         onClose={handleCloseAddSerials}
       />
     );
   }
 
-  if (selectedProduct) {
+  if (ui.selectedProduct) {
     return (
       <ProductDetail 
-        product={selectedProduct} 
+        product={ui.selectedProduct} 
         onClose={handleCloseDetail}
         onAddSerials={handleShowAddSerials}
       />
@@ -107,10 +82,16 @@ export const ProductMaster = ({ onProductSelect }: ProductMasterProps) => {
             Manage product catalog and serial number assignments
           </p>
         </div>
-        <Button className="flex items-center space-x-2">
-          <Plus className="h-4 w-4" />
-          <span>Add Product</span>
-        </Button>
+        <div className="flex items-center space-x-2">
+          <Button variant="outline" className="flex items-center space-x-2">
+            <GitBranch className="h-4 w-4" />
+            <span>Manage Child Parts</span>
+          </Button>
+          <Button className="flex items-center space-x-2">
+            <Plus className="h-4 w-4" />
+            <span>Add Product</span>
+          </Button>
+        </div>
       </div>
 
       <div className="flex items-center space-x-4">
@@ -118,8 +99,8 @@ export const ProductMaster = ({ onProductSelect }: ProductMasterProps) => {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search products..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            value={ui.searchTerms.products}
+            onChange={(e) => actions.setSearchTerm('products', e.target.value)}
             className="pl-10"
           />
         </div>
@@ -160,9 +141,31 @@ export const ProductMaster = ({ onProductSelect }: ProductMasterProps) => {
                 <span className="text-xs text-muted-foreground">
                   Updated {product.updated_date.toLocaleDateString()}
                 </span>
-                <Button variant="ghost" size="sm" className="h-8 px-2">
-                  <Eye className="h-3 w-3" />
-                </Button>
+                <div className="flex items-center space-x-1">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 px-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleShowAddChildParts(product);
+                    }}
+                    title="Add child parts"
+                  >
+                    <GitBranch className="h-3 w-3" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 px-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleProductClick(product);
+                    }}
+                  >
+                    <Eye className="h-3 w-3" />
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

@@ -1,24 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3, TrendingUp, Package, FileText } from "lucide-react";
-import { useSerialStore } from "@/hooks/useSerialStore";
-import { useEffect, useState } from "react";
+import { useGlobalState } from "@/hooks/useGlobalState";
 
 export const Analytics = () => {
-  const { getSerialCounts, store } = useSerialStore();
-  const [counts, setCounts] = useState({
-    total: 0,
-    unassigned: 0,
-    blocked: 0,
-    assigned: 0,
-  });
-
-  useEffect(() => {
-    const loadCounts = async () => {
-      const serialCounts = await getSerialCounts();
-      setCounts(serialCounts);
-    };
-    loadCounts();
-  }, [getSerialCounts, store]);
+  const { computed, asns, serials } = useGlobalState();
+  const counts = computed.getSerialCounts();
 
   const assignmentRate = counts.total > 0 ? ((counts.assigned / counts.total) * 100).toFixed(1) : 0;
   return (
@@ -50,13 +36,13 @@ export const Analytics = () => {
             <CardTitle className="text-sm font-medium">Active ASNs</CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-             <div className="text-2xl font-bold">{store?.asns.length || 0}</div>
-             <p className="text-xs text-muted-foreground">
-               <TrendingUp className="inline h-3 w-3 mr-1" />
-               Live from database
-             </p>
-           </CardContent>
+           <CardContent>
+              <div className="text-2xl font-bold">{asns.length}</div>
+              <p className="text-xs text-muted-foreground">
+                <TrendingUp className="inline h-3 w-3 mr-1" />
+                Live from database
+              </p>
+            </CardContent>
         </Card>
 
         <Card>
@@ -131,27 +117,43 @@ export const Analytics = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center space-x-4">
-                <div className="w-2 h-2 bg-success rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">ASN-2024-003 submitted</p>
-                  <p className="text-xs text-muted-foreground">2 hours ago</p>
+              {asns.slice(0, 3).map((asn, index) => (
+                <div key={asn.id} className="flex items-center space-x-4">
+                  <div className={`w-2 h-2 rounded-full ${
+                    asn.status === 'received' ? 'bg-success' : 
+                    asn.status === 'submitted' ? 'bg-primary' : 'bg-warning'
+                  }`}></div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">
+                      {asn.asn_number} {asn.status === 'received' ? 'received' : 
+                      asn.status === 'submitted' ? 'submitted' : 'draft'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {asn.items.length} items • {asn.updated_date.toLocaleDateString()}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center space-x-4">
-                <div className="w-2 h-2 bg-primary rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">50 serials assigned to CPU-001-X7</p>
-                  <p className="text-xs text-muted-foreground">4 hours ago</p>
+              ))}
+              
+              {serials.slice(0, 2).map((serial, index) => (
+                <div key={serial.id} className="flex items-center space-x-4">
+                  <div className="w-2 h-2 bg-primary rounded-full"></div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">
+                      Serial {serial.serial_number} {serial.status}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {serial.updated_date.toLocaleDateString()}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center space-x-4">
-                <div className="w-2 h-2 bg-warning rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Batch import completed</p>
-                  <p className="text-xs text-muted-foreground">6 hours ago</p>
+              ))}
+              
+              {(!asns.length && !serials.length) && (
+                <div className="text-center py-4">
+                  <p className="text-sm text-muted-foreground">No recent activity</p>
                 </div>
-              </div>
+              )}
             </div>
           </CardContent>
         </Card>

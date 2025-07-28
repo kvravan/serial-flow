@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,83 +5,19 @@ import { Input } from "@/components/ui/input";
 import { Search, Plus, FileText, Eye, Truck, Package } from "lucide-react";
 import { ASN } from "@/types";
 import { ASNDetail } from "./ASNDetail";
-
-// Mock ASN data
-const mockASNs: ASN[] = [
-  {
-    id: '1',
-    supplier_id: 'sup1',
-    buyer_id: 'buy1',
-    asn_number: 'ASN-2024-001',
-    status: 'draft',
-    ship_date: new Date('2024-02-15'),
-    delivery_date: new Date('2024-02-20'),
-    created_date: new Date('2024-01-25'),
-    updated_date: new Date('2024-01-26'),
-    items: [
-      {
-        id: '1',
-        asn_id: '1',
-        part_number_id: '1',
-        buyer_part_number: 'CPU-001-X7',
-        ship_quantity: 50,
-        lots: [
-          {
-            id: '1',
-            item_id: '1',
-            lot_number: 'LOT-2024-CPU-001',
-            quantity: 50
-          }
-        ]
-      }
-    ]
-  },
-  {
-    id: '2',
-    supplier_id: 'sup1',
-    buyer_id: 'buy1',
-    asn_number: 'ASN-2024-002',
-    status: 'submitted',
-    ship_date: new Date('2024-02-10'),
-    delivery_date: new Date('2024-02-12'),
-    created_date: new Date('2024-01-20'),
-    updated_date: new Date('2024-01-22'),
-    items: [
-      {
-        id: '2',
-        asn_id: '2',
-        part_number_id: '2',
-        buyer_part_number: 'MEM-002-DDR5',
-        ship_quantity: 100,
-        lots: [
-          {
-            id: '2',
-            item_id: '2',
-            lot_number: 'LOT-2024-MEM-001',
-            quantity: 100
-          }
-        ]
-      }
-    ]
-  }
-];
+import { useGlobalState } from "@/hooks/useGlobalState";
 
 export const ASNManagement = () => {
-  const [asns, setAsns] = useState(mockASNs);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedASN, setSelectedASN] = useState<ASN | null>(null);
-
-  const filteredASNs = asns.filter(asn =>
-    asn.asn_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    asn.status.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const { ui, actions, computed } = useGlobalState();
+  
+  const filteredASNs = computed.getFilteredASNs();
 
   const handleASNClick = (asn: ASN) => {
-    setSelectedASN(asn);
+    actions.setSelectedASN(asn);
   };
 
   const handleCloseDetail = () => {
-    setSelectedASN(null);
+    actions.setSelectedASN(null);
   };
 
   const getStatusVariant = (status: string) => {
@@ -98,10 +33,10 @@ export const ASNManagement = () => {
     }
   };
 
-  if (selectedASN) {
+  if (ui.selectedASN) {
     return (
       <ASNDetail 
-        asn={selectedASN} 
+        asn={ui.selectedASN} 
         onClose={handleCloseDetail}
       />
     );
@@ -127,8 +62,8 @@ export const ASNManagement = () => {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search ASNs..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            value={ui.searchTerms.asns}
+            onChange={(e) => actions.setSearchTerm('asns', e.target.value)}
             className="pl-10"
           />
         </div>
