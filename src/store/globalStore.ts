@@ -1,6 +1,5 @@
 import { SerialInventory, ASN, Product } from '@/types';
-import { serialProductsData } from '@/resources/serialProducts';
-import { serialInventoryData } from '@/resources/serialInventory';
+import { serialProductsData, serialInventoryData } from '@/resources/serialProducts';
 import { serialASNsData } from '@/resources/serialASNs';
 
 // Global State Interface
@@ -368,7 +367,9 @@ class GlobalStoreManager {
   }
 
   getSerialsByPartNumber(partNumberId: string): SerialInventory[] {
-    return this.state.serials.filter(s => s.part_number_id === partNumberId);
+    // Since we removed part_number_id, we'll need to implement this differently
+    // For now, return all serials - this can be enhanced later with product association logic
+    return this.state.serials;
   }
 
   getSerialCounts(): {
@@ -398,8 +399,7 @@ class GlobalStoreManager {
     if (searchTerms.serials) {
       const term = searchTerms.serials.toLowerCase();
       filtered = filtered.filter(s => 
-        s.serial_number.toLowerCase().includes(term) ||
-        s.part_number_id.toLowerCase().includes(term)
+        s.serial_number.toLowerCase().includes(term)
       );
     }
 

@@ -4,7 +4,6 @@ export interface SerialInventory {
   id: string;
   supplier_id: string;
   buyer_id: string;
-  part_number_id: string;
   serial_number: string;
   status: SerialStatus;
   asn_id?: string;
@@ -57,7 +56,6 @@ export interface PackagingNode {
 export interface ASNItem {
   id: string;
   asn_id: string;
-  part_number_id: string;
   buyer_part_number: string;
   ship_quantity: number;
   lots: ASNLot[];

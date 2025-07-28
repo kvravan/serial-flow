@@ -15,7 +15,6 @@ export const serialASNsData: ASN[] = [
       {
         id: 'item1',
         asn_id: '1',
-        part_number_id: '1',
         buyer_part_number: 'CPU-001-X7',
         ship_quantity: 10,
         lots: [
@@ -36,7 +35,6 @@ export const serialASNsData: ASN[] = [
       {
         id: 'item2',
         asn_id: '1',
-        part_number_id: '2',
         buyer_part_number: 'MEM-002-DDR5',
         ship_quantity: 20,
         lots: [
@@ -57,7 +55,6 @@ export const serialASNsData: ASN[] = [
       {
         id: 'item3',
         asn_id: '1',
-        part_number_id: '3',
         buyer_part_number: 'SSD-003-NVMe',
         ship_quantity: 8,
         lots: [
@@ -72,7 +69,6 @@ export const serialASNsData: ASN[] = [
       {
         id: 'item8',
         asn_id: '1',
-        part_number_id: '8',
         buyer_part_number: 'COOL-008-AIO',
         ship_quantity: 5,
         lots: [
@@ -100,7 +96,6 @@ export const serialASNsData: ASN[] = [
       {
         id: 'item4',
         asn_id: '2',
-        part_number_id: '4',
         buyer_part_number: 'GPU-004-RTX',
         ship_quantity: 5,
         lots: [
@@ -115,7 +110,6 @@ export const serialASNsData: ASN[] = [
       {
         id: 'item5',
         asn_id: '2',
-        part_number_id: '5',
         buyer_part_number: 'MB-005-Z690',
         ship_quantity: 8,
         lots: [
@@ -143,7 +137,6 @@ export const serialASNsData: ASN[] = [
       {
         id: 'item6',
         asn_id: '3',
-        part_number_id: '6',
         buyer_part_number: 'PSU-006-850W',
         ship_quantity: 12,
         lots: [
@@ -158,7 +151,6 @@ export const serialASNsData: ASN[] = [
       {
         id: 'item7',
         asn_id: '3',
-        part_number_id: '7',
         buyer_part_number: 'CASE-007-ATX',
         ship_quantity: 15,
         lots: [
