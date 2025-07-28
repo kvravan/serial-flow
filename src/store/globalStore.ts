@@ -1,4 +1,4 @@
-import { SerialInventory, ASN, Product } from '@/types';
+import { SerialInventory, ASN, Product, ASNSerialAssignment } from '@/types';
 import { serialProductsData, serialInventoryData } from '@/resources/serialProducts';
 import { serialASNsData } from '@/resources/serialASNs';
 
@@ -230,15 +230,7 @@ class GlobalStoreManager {
     }));
   }
 
-  updateSerialStatus(serialId: string, status: SerialInventory['status'], asnId?: string): void {
-    this.setState(state => ({
-      serials: state.serials.map(serial => 
-        serial.id === serialId 
-          ? { ...serial, status, asn_id: asnId, updated_date: new Date() }
-          : serial
-      )
-    }));
-  }
+
 
   addASN(asn: ASN): void {
     this.setState(state => ({
@@ -247,11 +239,24 @@ class GlobalStoreManager {
   }
 
   updateASN(updatedASN: ASN): void {
+    const oldASN = this.state.asns.find(asn => asn.id === updatedASN.id);
+    
     this.setState(state => ({
       asns: state.asns.map(asn => 
         asn.id === updatedASN.id ? updatedASN : asn
       )
     }));
+
+    // Update serial statuses for all assignments in this ASN if status changed
+    if (oldASN && oldASN.status !== updatedASN.status && updatedASN.serialAssignments) {
+      updatedASN.serialAssignments.forEach(assignment => {
+        if (updatedASN.status === 'submitted') {
+          this.updateSerialStatusBySerialNumber(assignment.serial_number, 'assigned', updatedASN.id);
+        } else {
+          this.updateSerialStatusBySerialNumber(assignment.serial_number, 'blocked', updatedASN.id);
+        }
+      });
+    }
   }
 
   deleteASN(asnId: string): void {
@@ -453,6 +458,115 @@ class GlobalStoreManager {
 
   private getDefaultProducts(): Product[] {
     return serialProductsData;
+  }
+
+  // ASN Serial Assignment Methods (working with ASN-embedded assignments)
+  addASNSerialAssignment(asnId: string, assignment: ASNSerialAssignment): void {
+    this.setState(state => ({
+      asns: state.asns.map(asn => 
+        asn.id === asnId 
+          ? { 
+              ...asn, 
+              serialAssignments: [...(asn.serialAssignments || []), assignment],
+              updated_date: new Date()
+            }
+          : asn
+      )
+    }));
+    
+    // Update serial status based on ASN status
+    const asn = this.state.asns.find(a => a.id === asnId);
+    if (asn) {
+      if (asn.status === 'submitted') {
+        this.updateSerialStatusBySerialNumber(assignment.serial_number, 'assigned', asn.id);
+      } else {
+        this.updateSerialStatusBySerialNumber(assignment.serial_number, 'blocked', asn.id);
+      }
+    }
+  }
+
+  updateASNSerialAssignment(asnId: string, assignmentId: string, updatedAssignment: ASNSerialAssignment): void {
+    this.setState(state => ({
+      asns: state.asns.map(asn => 
+        asn.id === asnId 
+          ? { 
+              ...asn, 
+              serialAssignments: (asn.serialAssignments || []).map(assignment =>
+                assignment.id === assignmentId ? updatedAssignment : assignment
+              ),
+              updated_date: new Date()
+            }
+          : asn
+      )
+    }));
+  }
+
+  deleteASNSerialAssignment(asnId: string, assignmentId: string): void {
+    this.setState(state => ({
+      asns: state.asns.map(asn => 
+        asn.id === asnId 
+          ? { 
+              ...asn, 
+              serialAssignments: (asn.serialAssignments || []).filter(assignment => assignment.id !== assignmentId),
+              updated_date: new Date()
+            }
+          : asn
+      )
+    }));
+  }
+
+  getASNSerialAssignmentsByASN(asnId: string): ASNSerialAssignment[] {
+    const asn = this.state.asns.find(a => a.id === asnId);
+    return asn?.serialAssignments || [];
+  }
+
+  getASNSerialAssignmentsBySerial(serialNumber: string): ASNSerialAssignment[] {
+    const assignments: ASNSerialAssignment[] = [];
+    this.state.asns.forEach(asn => {
+      if (asn.serialAssignments) {
+        assignments.push(...asn.serialAssignments.filter(assignment => 
+          assignment.serial_number === serialNumber
+        ));
+      }
+    });
+    return assignments;
+  }
+
+  // Helper method to update serial status by serial number
+  private updateSerialStatusBySerialNumber(serialNumber: string, status: SerialInventory['status'], asnId?: string): void {
+    this.setState(state => ({
+      serials: state.serials.map(serial =>
+        serial.serial_number === serialNumber
+          ? { ...serial, status, asn_id: asnId, updated_date: new Date() }
+          : serial
+      )
+    }));
+  }
+
+  // Override the existing updateSerialStatus method to handle ASN status logic
+  updateSerialStatus(serialId: string, status: SerialInventory['status'], asnId?: string): void {
+    this.setState(state => ({
+      serials: state.serials.map(serial =>
+        serial.id === serialId
+          ? { ...serial, status, asn_id: asnId, updated_date: new Date() }
+          : serial
+      )
+    }));
+
+    // If assigning to ASN, check if ASN is submitted
+    if (asnId && status === 'assigned') {
+      const asn = this.state.asns.find(a => a.id === asnId);
+      if (asn && asn.status !== 'submitted') {
+        // Update status to 'blocked' if ASN is not submitted
+        this.setState(state => ({
+          serials: state.serials.map(serial =>
+            serial.id === serialId
+              ? { ...serial, status: 'blocked', updated_date: new Date() }
+              : serial
+          )
+        }));
+      }
+    }
   }
 }
 

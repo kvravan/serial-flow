@@ -46,8 +46,10 @@ export const ASNManageSerials = ({ asn, open, onClose }: ASNManageSerialsProps) 
 
   const loadSerialData = async () => {
     const serials = computed.getSerialsByASN(asn.id);
+    // Group serials by product - we'll need to find the product based on serial attributes or other logic
     const grouped = serials.reduce((acc, serial) => {
-      const key = serial.part_number_id;
+      // For now, group by a default key since we don't have part_number_id
+      const key = 'default';
       if (!acc[key]) acc[key] = [];
       acc[key].push(serial);
       return acc;

@@ -76,7 +76,6 @@ export const AddSerialsForm = ({ product, onClose }: AddSerialsFormProps) => {
         id: `serial_${Date.now()}`,
         supplier_id: 'sup1',
         buyer_id: 'buy1',
-        part_number_id: product.id,
         serial_number: singleSerial.trim(),
         status: 'unassigned',
         expiry_date: expiryDate,
@@ -137,7 +136,6 @@ export const AddSerialsForm = ({ product, onClose }: AddSerialsFormProps) => {
           id: `serial_${Date.now()}_${i}`,
           supplier_id: 'sup1',
           buyer_id: 'buy1',
-          part_number_id: product.id,
           serial_number: `${prefix}${paddedNumber}`,
           status: 'unassigned',
           expiry_date: bulkExpiryDate,
@@ -351,7 +349,7 @@ export const AddSerialsForm = ({ product, onClose }: AddSerialsFormProps) => {
                               {serial.serial_number}
                             </Badge>
                             <span className="text-xs text-muted-foreground">
-                              Part: {serial.part_number_id}
+                              Part: {product.buyer_part_number}
                             </span>
                           </div>
                           <Button

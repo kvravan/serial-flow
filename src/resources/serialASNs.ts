@@ -1,5 +1,16 @@
 import { ASN } from '@/types';
 
+export interface ASNSerialAssignment {
+  id: string;
+  supplier_id: string;
+  part_number_id: string;
+  serial_number: string;
+  line_id: string;
+  lot_line_id: string;
+  package_id: string;
+  assigned_date: Date;
+}
+
 export const serialASNsData: ASN[] = [
   {
     id: '1',
@@ -11,6 +22,28 @@ export const serialASNsData: ASN[] = [
     delivery_date: new Date('2024-02-20'),
     created_date: new Date('2024-01-15'),
     updated_date: new Date('2024-01-20'),
+    serialAssignments: [
+      {
+        id: '1',
+        supplier_id: 'sup1',
+        part_number_id: '1',
+        serial_number: 'CPU001X7001',
+        line_id: 'item1',
+        lot_line_id: 'lot1',
+        package_id: 'package1',
+        assigned_date: new Date('2024-01-15')
+      },
+      {
+        id: '2',
+        supplier_id: 'sup1',
+        part_number_id: '1',
+        serial_number: 'CPU001X7002',
+        line_id: 'item1',
+        lot_line_id: 'lot1',
+        package_id: 'package1',
+        assigned_date: new Date('2024-01-16')
+      }
+    ],
     items: [
       {
         id: 'item1',
@@ -92,6 +125,18 @@ export const serialASNsData: ASN[] = [
     delivery_date: new Date('2024-02-25'),
     created_date: new Date('2024-01-18'),
     updated_date: new Date('2024-01-25'),
+    serialAssignments: [
+      {
+        id: '3',
+        supplier_id: 'sup1',
+        part_number_id: '2',
+        serial_number: 'MEM002DDR5002',
+        line_id: 'item2',
+        lot_line_id: 'lot3',
+        package_id: 'package2',
+        assigned_date: new Date('2024-01-20')
+      }
+    ],
     items: [
       {
         id: 'item4',
@@ -133,6 +178,18 @@ export const serialASNsData: ASN[] = [
     delivery_date: new Date('2024-02-15'),
     created_date: new Date('2024-01-20'),
     updated_date: new Date('2024-01-30'),
+    serialAssignments: [
+      {
+        id: '4',
+        supplier_id: 'sup1',
+        part_number_id: '3',
+        serial_number: 'SSD003NVME002',
+        line_id: 'item3',
+        lot_line_id: 'lot5',
+        package_id: 'package3',
+        assigned_date: new Date('2024-01-22')
+      }
+    ],
     items: [
       {
         id: 'item6',

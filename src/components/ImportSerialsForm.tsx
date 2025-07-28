@@ -76,7 +76,6 @@ export const ImportSerialsForm = ({ product, onClose }: ImportSerialsFormProps) 
             id: `serial_${Date.now()}_${Math.random()}`,
             supplier_id: 'sup1',
             buyer_id: 'buy1',
-            part_number_id: product.id,
             serial_number: trimmedLine,
             status: 'unassigned',
             expiry_date: expiryDate,

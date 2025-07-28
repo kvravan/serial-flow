@@ -26,8 +26,9 @@ export const ASNDetail = ({ asn, onClose }: ASNDetailProps) => {
   React.useEffect(() => {
     const counts: {[key: string]: number} = {};
     for (const item of asn.items) {
-      const assignedSerials = computed.getSerialsByPartNumber(item.part_number_id);
-      counts[item.id] = assignedSerials.filter(s => s.asn_id === asn.id && s.status === 'assigned').length;
+      // Get serials assigned to this ASN and filter by status
+      const assignedSerials = computed.getSerialsByASN(asn.id);
+      counts[item.id] = assignedSerials.filter(s => s.status === 'assigned').length;
     }
     setAssignedCounts(counts);
   }, [asn.items, asn.id, computed]);

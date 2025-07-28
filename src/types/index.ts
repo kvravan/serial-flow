@@ -40,7 +40,19 @@ export interface ASN {
   created_date: Date;
   updated_date: Date;
   items: ASNItem[];
+  serialAssignments?: ASNSerialAssignment[];
   packaging_hierarchy?: PackagingNode;
+}
+
+export interface ASNSerialAssignment {
+  id: string;
+  supplier_id: string;
+  part_number_id: string;
+  serial_number: string;
+  line_id: string;
+  lot_line_id: string;
+  package_id: string;
+  assigned_date: Date;
 }
 
 export interface PackagingNode {
@@ -68,15 +80,3 @@ export interface ASNLot {
   quantity: number;
 }
 
-export interface ASNSerialAssignment {
-  id: string;
-  serial_id: string;
-  supplier_id: string;
-  part_number_id: string;
-  serial_number: string;
-  user_doc_id: string;
-  line_id: string;
-  lot_line_id: string;
-  package_id: string;
-  assigned_date: Date;
-}

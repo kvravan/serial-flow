@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { globalStore, GlobalState } from '@/store/globalStore';
-import { SerialInventory, ASN, Product } from '@/types';
+import { SerialInventory, ASN, Product, ASNSerialAssignment } from '@/types';
 
 export const useGlobalState = () => {
   const [state, setState] = useState<GlobalState>(globalStore.getState());
@@ -23,6 +23,16 @@ export const useGlobalState = () => {
     addASN: (asn: ASN) => globalStore.addASN(asn),
     updateASN: (asn: ASN) => globalStore.updateASN(asn),
     deleteASN: (asnId: string) => globalStore.deleteASN(asnId),
+    
+    // ASN Serial Assignment actions
+    addASNSerialAssignment: (asnId: string, assignment: ASNSerialAssignment) => 
+      globalStore.addASNSerialAssignment(asnId, assignment),
+    updateASNSerialAssignment: (asnId: string, assignmentId: string, assignment: ASNSerialAssignment) => 
+      globalStore.updateASNSerialAssignment(asnId, assignmentId, assignment),
+    deleteASNSerialAssignment: (asnId: string, assignmentId: string) => 
+      globalStore.deleteASNSerialAssignment(asnId, assignmentId),
+    getASNSerialAssignmentsByASN: (asnId: string) => globalStore.getASNSerialAssignmentsByASN(asnId),
+    getASNSerialAssignmentsBySerial: (serialNumber: string) => globalStore.getASNSerialAssignmentsBySerial(serialNumber),
 
     // Product actions
     addProduct: (product: Product) => globalStore.addProduct(product),

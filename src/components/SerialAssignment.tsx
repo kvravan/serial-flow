@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Search, ArrowLeft, Package, CheckCircle } from "lucide-react";
-import { ASN, SerialInventory } from "@/types";
+import { ASN, SerialInventory, ASNSerialAssignment } from "@/types";
 import { useGlobalState } from "@/hooks/useGlobalState";
 import { StatusBadge } from "./StatusBadge";
 
@@ -58,9 +58,25 @@ export const SerialAssignment = ({ asn, onClose }: SerialAssignmentProps) => {
 
   const handleAssignSerials = async () => {
     try {
-      // Update serial status to blocked and assign to ASN
+      // Create ASN serial assignments for each selected serial
       for (const serialId of selectedSerials) {
-        await actions.updateSerialStatus(serialId, 'blocked', asn.id);
+        const serial = state.serials.find(s => s.id === serialId);
+        if (serial) {
+          // Create assignment record
+          const assignment: ASNSerialAssignment = {
+            id: `assignment_${Date.now()}_${Math.random()}`,
+            supplier_id: serial.supplier_id,
+            part_number_id: asn.items[0]?.buyer_part_number || '', // Use ASN item part number
+            serial_number: serial.serial_number,
+            line_id: asn.items[0]?.id || '', // Default to first item
+            lot_line_id: asn.items[0]?.lots[0]?.id || '', // Default to first lot
+            package_id: `package_${Date.now()}`,
+            assigned_date: new Date()
+          };
+          
+          // Add assignment to ASN
+          await actions.addASNSerialAssignment(asn.id, assignment);
+        }
       }
       
       // Reload data to reflect changes
