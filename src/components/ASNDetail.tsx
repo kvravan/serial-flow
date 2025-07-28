@@ -8,7 +8,7 @@ import { ArrowLeft, FileText, Package, Truck, Settings, Send } from "lucide-reac
 import { ASN } from "@/types";
 import { SerialAssignment } from "./SerialAssignment";
 import { ASNAssignSerials } from "./ASNAssignSerials";
-import { useSerialStore } from "@/hooks/useSerialStore";
+import { useGlobalState } from "@/hooks/useGlobalState";
 
 interface ASNDetailProps {
   asn: ASN;
@@ -19,21 +19,18 @@ export const ASNDetail = ({ asn, onClose }: ASNDetailProps) => {
   const [showSerialAssignment, setShowSerialAssignment] = useState(false);
   const [showAssignmentPopup, setShowAssignmentPopup] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>(null);
-  const { getSerialsByASN, getSerialsByPartNumber } = useSerialStore();
+  const { computed } = useGlobalState();
   const [assignedCounts, setAssignedCounts] = useState<{[key: string]: number}>({});
 
   // Calculate assigned serial counts for each item
   React.useEffect(() => {
-    const calculateAssignedCounts = async () => {
-      const counts: {[key: string]: number} = {};
-      for (const item of asn.items) {
-        const assignedSerials = await getSerialsByPartNumber(item.part_number_id);
-        counts[item.id] = assignedSerials.filter(s => s.asn_id === asn.id && s.status === 'assigned').length;
-      }
-      setAssignedCounts(counts);
-    };
-    calculateAssignedCounts();
-  }, [asn.items, asn.id, getSerialsByPartNumber]);
+    const counts: {[key: string]: number} = {};
+    for (const item of asn.items) {
+      const assignedSerials = computed.getSerialsByPartNumber(item.part_number_id);
+      counts[item.id] = assignedSerials.filter(s => s.asn_id === asn.id && s.status === 'assigned').length;
+    }
+    setAssignedCounts(counts);
+  }, [asn.items, asn.id, computed]);
 
   const getStatusVariant = (status: string) => {
     switch (status) {
