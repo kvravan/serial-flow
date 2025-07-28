@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Search, ArrowLeft, Package, CheckCircle } from "lucide-react";
 import { ASN, SerialInventory } from "@/types";
-import { useSerialStore } from "@/hooks/useSerialStore";
+import { useGlobalState } from "@/hooks/useGlobalState";
 import { StatusBadge } from "./StatusBadge";
 
 interface SerialAssignmentProps {
@@ -15,7 +15,7 @@ interface SerialAssignmentProps {
 }
 
 export const SerialAssignment = ({ asn, onClose }: SerialAssignmentProps) => {
-  const { store, getSerialsByStatus, updateSerialStatus } = useSerialStore();
+  const { state, actions, computed } = useGlobalState();
   const [availableSerials, setAvailableSerials] = useState<SerialInventory[]>([]);
   const [blockedSerials, setBlockedSerials] = useState<SerialInventory[]>([]);
   const [selectedSerials, setSelectedSerials] = useState<string[]>([]);
@@ -28,8 +28,8 @@ export const SerialAssignment = ({ asn, onClose }: SerialAssignmentProps) => {
 
   const loadSerialData = async () => {
     try {
-      const unassignedSerials = await getSerialsByStatus('unassigned');
-      const blockedSerials = await getSerialsByStatus('blocked');
+      const unassignedSerials = computed.getSerialsByStatus('unassigned');
+      const blockedSerials = computed.getSerialsByStatus('blocked');
       
       setAvailableSerials(unassignedSerials);
       setBlockedSerials(blockedSerials);
@@ -60,7 +60,7 @@ export const SerialAssignment = ({ asn, onClose }: SerialAssignmentProps) => {
     try {
       // Update serial status to blocked and assign to ASN
       for (const serialId of selectedSerials) {
-        await updateSerialStatus(serialId, 'blocked', asn.id);
+        await actions.updateSerialStatus(serialId, 'blocked', asn.id);
       }
       
       // Reload data to reflect changes

@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ArrowLeft, Upload, CalendarIcon, Plus, X } from "lucide-react";
-import { useSerialStore } from "@/hooks/useSerialStore";
+import { useGlobalState } from "@/hooks/useGlobalState";
 import { SerialInventory, Product } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -18,7 +18,7 @@ interface ImportSerialsFormProps {
 }
 
 export const ImportSerialsForm = ({ product, onClose }: ImportSerialsFormProps) => {
-  const { addSerials } = useSerialStore();
+  const { actions } = useGlobalState();
   const { toast } = useToast();
   
   const [csvFile, setCsvFile] = useState<File | null>(null);
@@ -98,7 +98,7 @@ export const ImportSerialsForm = ({ product, onClose }: ImportSerialsFormProps) 
         return;
       }
 
-      await addSerials(serials);
+      await actions.addSerials(serials);
       toast({
         title: "Serials imported",
         description: `${serials.length} serial numbers imported successfully.`

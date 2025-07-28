@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ArrowLeft, Package, Box, Layers } from "lucide-react";
 import { ASN } from "@/types";
-import { useSerialStore } from "@/hooks/useSerialStore";
+import { useGlobalState } from "@/hooks/useGlobalState";
 import { ASNHierarchyView } from "./ASNHierarchyView";
 import { SerialGridView } from "./SerialGridView";
 import { AssignSerialsPopup } from "./AssignSerialsPopup";
@@ -18,7 +18,7 @@ interface ASNSerialAssignmentPopupProps {
 }
 
 export const ASNSerialAssignmentPopup = ({ asn, open, onClose }: ASNSerialAssignmentPopupProps) => {
-  const { getSerialsByASN } = useSerialStore();
+  const { computed } = useGlobalState();
   const [blockedSerials, setBlockedSerials] = useState(0);
   const [showSerialGrid, setShowSerialGrid] = useState<{
     show: boolean;
@@ -46,7 +46,7 @@ export const ASNSerialAssignmentPopup = ({ asn, open, onClose }: ASNSerialAssign
   }, [open, asn]);
 
   const loadBlockedSerials = async () => {
-    const serials = await getSerialsByASN(asn.id);
+    const serials = computed.getSerialsByASN(asn.id);
     setBlockedSerials(serials.filter(s => s.status === 'blocked').length);
   };
 

@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Search, Filter, CheckSquare } from "lucide-react";
 import { ASN, SerialInventory } from "@/types";
-import { useSerialStore } from "@/hooks/useSerialStore";
+import { useGlobalState } from "@/hooks/useGlobalState";
 import { StatusBadge } from "./StatusBadge";
 
 interface SerialGridViewProps {
@@ -32,7 +32,7 @@ export const SerialGridView = ({
   contextLaunched = false,
   showBackButton = false 
 }: SerialGridViewProps) => {
-  const { store, getSerialsByASN, getSerialsByStatus, updateSerialStatus } = useSerialStore();
+  const { state, actions, computed } = useGlobalState();
   const [blockedSerials, setBlockedSerials] = useState<SerialInventory[]>([]);
   const [inventorySerials, setInventorySerials] = useState<SerialInventory[]>([]);
   const [selectedSerials, setSelectedSerials] = useState<Set<string>>(new Set());
@@ -48,8 +48,8 @@ export const SerialGridView = ({
   }, [asn.id]);
 
   const loadSerials = async () => {
-    const asnSerials = await getSerialsByASN(asn.id);
-    const inventorySerials = await getSerialsByStatus('unassigned');
+    const asnSerials = computed.getSerialsByASN(asn.id);
+    const inventorySerials = computed.getSerialsByStatus('unassigned');
     
     setBlockedSerials(asnSerials.filter(s => s.status === 'blocked'));
     setInventorySerials(inventorySerials);
@@ -109,7 +109,7 @@ export const SerialGridView = ({
     const idsToAssign = serialIds || Array.from(selectedSerials);
     
     for (const serialId of idsToAssign) {
-      await updateSerialStatus(serialId, 'blocked', asn.id);
+      await actions.updateSerialStatus(serialId, 'blocked', asn.id);
     }
     
     setSelectedSerials(new Set());
@@ -117,7 +117,6 @@ export const SerialGridView = ({
   };
 
   const getAvailablePartNumbers = () => {
-    if (!store) return [];
     const allSerials = [...blockedSerials, ...inventorySerials];
     const partNumbers = new Set(allSerials.map(s => s.part_number_id));
     return Array.from(partNumbers);

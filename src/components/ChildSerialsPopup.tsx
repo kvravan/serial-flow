@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search, Package, Check } from "lucide-react";
 import { SerialInventory } from "@/types";
-import { useSerialStore } from "@/hooks/useSerialStore";
+import { useGlobalState } from "@/hooks/useGlobalState";
 
 interface ChildSerialsPopupProps {
   isOpen: boolean;
@@ -18,12 +18,12 @@ interface ChildSerialsPopupProps {
 }
 
 export const ChildSerialsPopup = ({ isOpen, onClose, onSelectSerials, childPartNumbers }: ChildSerialsPopupProps) => {
-  const { store } = useSerialStore();
+  const { state } = useGlobalState();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSerials, setSelectedSerials] = useState<Set<string>>(new Set());
   const [filteredSerials, setFilteredSerials] = useState<SerialInventory[]>([]);
 
-  const serials = store?.serials || [];
+  const serials = state.serials || [];
 
   useEffect(() => {
     // Filter serials that belong to child parts and are unassigned
@@ -73,7 +73,7 @@ export const ChildSerialsPopup = ({ isOpen, onClose, onSelectSerials, childPartN
   };
 
   const getPartNumber = (partNumberId: string) => {
-    const product = store?.products.find(p => p.id === partNumberId);
+    const product = state.products.find(p => p.id === partNumberId);
     return product?.buyer_part_number || partNumberId;
   };
 

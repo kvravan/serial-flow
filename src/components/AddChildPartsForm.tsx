@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Plus, X, Search, Package } from "lucide-react";
 import { Product } from "@/types";
-import { useSerialStore } from "@/hooks/useSerialStore";
+import { useGlobalState } from "@/hooks/useGlobalState";
 import { useToast } from "@/hooks/use-toast";
 
 interface AddChildPartsFormProps {
@@ -22,13 +22,13 @@ interface ChildPart {
 }
 
 export const AddChildPartsForm = ({ product, onClose }: AddChildPartsFormProps) => {
-  const { store } = useSerialStore();
+  const { state } = useGlobalState();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedParts, setSelectedParts] = useState<ChildPart[]>([]);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
 
-  const products = store?.products || [];
+  const products = state.products || [];
   
   const filteredProducts = products.filter(p => 
     p.id !== product.id &&

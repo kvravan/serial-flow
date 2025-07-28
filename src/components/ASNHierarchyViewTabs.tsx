@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Package, Box, Layers, Filter, ChevronDown, ChevronRight } from "lucide-react";
 import { ASN, Product } from "@/types";
-import { useSerialStore } from "@/hooks/useSerialStore";
+import { useGlobalState } from "@/hooks/useGlobalState";
 
 interface ASNHierarchyViewTabsProps {
   asn: ASN;
@@ -15,7 +15,7 @@ interface ASNHierarchyViewTabsProps {
 }
 
 export const ASNHierarchyViewTabs = ({ asn, onAssignToNode }: ASNHierarchyViewTabsProps) => {
-  const { getSerialsByASN, store } = useSerialStore();
+  const { state, computed } = useGlobalState();
   const [selectedPartNumber, setSelectedPartNumber] = useState<string>("all");
   const [serialsByPartNumber, setSerialsByPartNumber] = useState<Record<string, any[]>>({});
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
@@ -31,7 +31,7 @@ export const ASNHierarchyViewTabs = ({ asn, onAssignToNode }: ASNHierarchyViewTa
   }, [asn]);
 
   const loadSerialData = async () => {
-    const serials = await getSerialsByASN(asn.id);
+    const serials = computed.getSerialsByASN(asn.id);
     const grouped = serials.reduce((acc, serial) => {
       const key = serial.part_number_id;
       if (!acc[key]) acc[key] = [];
@@ -54,7 +54,7 @@ export const ASNHierarchyViewTabs = ({ asn, onAssignToNode }: ASNHierarchyViewTa
 
   // Get product information for part numbers
   const getProductForPartNumber = (partNumber: string): Product | undefined => {
-    return store?.products.find(p => p.buyer_part_number === partNumber);
+    return state.products.find(p => p.buyer_part_number === partNumber);
   };
 
   // Get serials for a specific part number

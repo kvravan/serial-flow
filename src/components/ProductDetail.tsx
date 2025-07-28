@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Package, Settings, BarChart3, Plus } from "lucide-react";
 import { Product } from "@/types";
 import { SerialManagement } from "./SerialManagement";
-import { useSerialStore } from "@/hooks/useSerialStore";
+import { useGlobalState } from "@/hooks/useGlobalState";
 
 interface ProductDetailProps {
   product: Product;
@@ -16,7 +16,7 @@ interface ProductDetailProps {
 
 export const ProductDetail = ({ product, onClose, onAddSerials }: ProductDetailProps) => {
   const [showSerialManagement, setShowSerialManagement] = useState(false);
-  const { getSerialsByPartNumber, getSerialCounts } = useSerialStore();
+  const { computed } = useGlobalState();
   const [serialStats, setSerialStats] = useState({
     total: 0,
     unassigned: 0,
@@ -26,7 +26,7 @@ export const ProductDetail = ({ product, onClose, onAddSerials }: ProductDetailP
 
   useEffect(() => {
     const loadSerialStats = async () => {
-      const serials = await getSerialsByPartNumber(product.id);
+      const serials = computed.getSerialsByPartNumber(product.id);
       setSerialStats({
         total: serials.length,
         unassigned: serials.filter(s => s.status === 'unassigned').length,
@@ -36,7 +36,7 @@ export const ProductDetail = ({ product, onClose, onAddSerials }: ProductDetailP
     };
     
     loadSerialStats();
-  }, [product.id, getSerialsByPartNumber]);
+  }, [product.id, computed]);
 
   if (showSerialManagement) {
     return (

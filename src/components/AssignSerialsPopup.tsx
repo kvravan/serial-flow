@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ArrowLeft, Search, CheckSquare, X } from "lucide-react";
 import { ASN, SerialInventory } from "@/types";
-import { useSerialStore } from "@/hooks/useSerialStore";
+import { useGlobalState } from "@/hooks/useGlobalState";
 import { StatusBadge } from "./StatusBadge";
 
 interface AssignSerialsPopupProps {
@@ -33,7 +33,7 @@ export const AssignSerialsPopup = ({
   onClose,
   onAssign
 }: AssignSerialsPopupProps) => {
-  const { getSerialsByASN, getSerialsByStatus, updateSerialStatus } = useSerialStore();
+  const { actions, computed } = useGlobalState();
   const [blockedSerials, setBlockedSerials] = useState<SerialInventory[]>([]);
   const [inventorySerials, setInventorySerials] = useState<SerialInventory[]>([]);
   const [selectedSerials, setSelectedSerials] = useState<Set<string>>(new Set());
@@ -51,8 +51,8 @@ export const AssignSerialsPopup = ({
   }, [open, asn.id, partNumbers]);
 
   const loadSerials = async () => {
-    const asnSerials = await getSerialsByASN(asn.id);
-    const inventorySerials = await getSerialsByStatus('unassigned');
+    const asnSerials = computed.getSerialsByASN(asn.id);
+    const inventorySerials = computed.getSerialsByStatus('unassigned');
     
     // Filter by part numbers if provided
     const filterByPartNumber = (serials: SerialInventory[]) => 
@@ -111,7 +111,7 @@ export const AssignSerialsPopup = ({
     const serialIds = Array.from(selectedSerials);
     
     for (const serialId of serialIds) {
-      await updateSerialStatus(serialId, 'blocked', asn.id);
+      await actions.updateSerialStatus(serialId, 'blocked', asn.id);
     }
     
     onAssign(serialIds);

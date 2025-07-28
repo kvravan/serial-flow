@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ArrowLeft, Plus, Hash, FileText, CalendarIcon, Upload, X, GitBranch } from "lucide-react";
-import { useSerialStore } from "@/hooks/useSerialStore";
+import { useGlobalState } from "@/hooks/useGlobalState";
 import { SerialInventory, Product } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { ChildSerialsPopup } from "./ChildSerialsPopup";
@@ -22,7 +22,7 @@ interface AddSerialsFormProps {
 }
 
 export const AddSerialsForm = ({ product, onClose }: AddSerialsFormProps) => {
-  const { addSerials } = useSerialStore();
+  const { actions } = useGlobalState();
   const { toast } = useToast();
   
   // Single entry form
@@ -87,7 +87,7 @@ export const AddSerialsForm = ({ product, onClose }: AddSerialsFormProps) => {
         updated_by: 'user'
       };
       
-      await addSerials([newSerial]);
+      await actions.addSerials([newSerial]);
       setSingleSerial("");
       setExpiryDate(undefined);
       setAttributes([]);
@@ -149,7 +149,7 @@ export const AddSerialsForm = ({ product, onClose }: AddSerialsFormProps) => {
         });
       }
       
-      await addSerials(serials);
+      await actions.addSerials(serials);
       setPrefix("");
       setStartNumber("");
       setEndNumber("");

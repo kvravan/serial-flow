@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ArrowLeft, Package, Box, Layers, Filter } from "lucide-react";
 import { ASN, Product } from "@/types";
-import { useSerialStore } from "@/hooks/useSerialStore";
+import { useGlobalState } from "@/hooks/useGlobalState";
 import { ASNHierarchyView } from "./ASNHierarchyView";
 import { SerialGridView } from "./SerialGridView";
 
@@ -18,7 +18,7 @@ interface ASNManageSerialsProps {
 }
 
 export const ASNManageSerials = ({ asn, open, onClose }: ASNManageSerialsProps) => {
-  const { getSerialsByASN, store } = useSerialStore();
+  const { state, computed } = useGlobalState();
   const [blockedSerials, setBlockedSerials] = useState(0);
   const [selectedPartNumber, setSelectedPartNumber] = useState<string>("all");
   const [showSerialGrid, setShowSerialGrid] = useState<{
@@ -40,12 +40,12 @@ export const ASNManageSerials = ({ asn, open, onClose }: ASNManageSerialsProps) 
   }, [open, asn]);
 
   const loadBlockedSerials = async () => {
-    const serials = await getSerialsByASN(asn.id);
+    const serials = computed.getSerialsByASN(asn.id);
     setBlockedSerials(serials.filter(s => s.status === 'blocked').length);
   };
 
   const loadSerialData = async () => {
-    const serials = await getSerialsByASN(asn.id);
+    const serials = computed.getSerialsByASN(asn.id);
     const grouped = serials.reduce((acc, serial) => {
       const key = serial.part_number_id;
       if (!acc[key]) acc[key] = [];
@@ -80,7 +80,7 @@ export const ASNManageSerials = ({ asn, open, onClose }: ASNManageSerialsProps) 
 
   // Get product information for part numbers
   const getProductForPartNumber = (partNumber: string): Product | undefined => {
-    return store?.products.find(p => p.buyer_part_number === partNumber);
+    return state.products.find(p => p.buyer_part_number === partNumber);
   };
 
   // Get serials for a specific part number

@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Settings, Grid3X3 } from "lucide-react";
 import { ASN } from "@/types";
-import { useSerialStore } from "@/hooks/useSerialStore";
+import { useGlobalState } from "@/hooks/useGlobalState";
 import { ASNHierarchyViewTabs } from "./ASNHierarchyViewTabs";
 import { SerialGridView } from "./SerialGridView";
 
@@ -16,7 +16,7 @@ interface ASNAssignSerialsProps {
 }
 
 export const ASNAssignSerials = ({ asn, open, onClose }: ASNAssignSerialsProps) => {
-  const { getSerialsByASN } = useSerialStore();
+  const { computed } = useGlobalState();
   const [blockedSerials, setBlockedSerials] = useState(0);
   const [activeTab, setActiveTab] = useState("hierarchy");
   const [serialGridFilters, setSerialGridFilters] = useState<{
@@ -35,7 +35,7 @@ export const ASNAssignSerials = ({ asn, open, onClose }: ASNAssignSerialsProps) 
   }, [open, asn]);
 
   const loadBlockedSerials = async () => {
-    const serials = await getSerialsByASN(asn.id);
+    const serials = computed.getSerialsByASN(asn.id);
     setBlockedSerials(serials.filter(s => s.status === 'blocked').length);
   };
 

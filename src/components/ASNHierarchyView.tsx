@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChevronRight, ChevronDown, Package, Box, Layers, Tag } from "lucide-react";
 import { ASN, ASNItem, ASNLot } from "@/types";
-import { useSerialStore } from "@/hooks/useSerialStore";
+import { useGlobalState } from "@/hooks/useGlobalState";
 
 interface ASNHierarchyViewProps {
   asn: ASN;
@@ -67,7 +67,7 @@ const mockPackageStructure: PackageStructure[] = [
 ];
 
 export const ASNHierarchyView = ({ asn, onAssignToNode }: ASNHierarchyViewProps) => {
-  const { getSerialsByASN } = useSerialStore();
+  const { computed } = useGlobalState();
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [expandedPackages, setExpandedPackages] = useState<Set<string>>(new Set());
   const [serialsByPartNumber, setSerialsByPartNumber] = useState<Record<string, any[]>>({});
@@ -77,7 +77,7 @@ export const ASNHierarchyView = ({ asn, onAssignToNode }: ASNHierarchyViewProps)
   }, [asn.id]);
 
   const loadSerialData = async () => {
-    const serials = await getSerialsByASN(asn.id);
+    const serials = computed.getSerialsByASN(asn.id);
     const grouped = serials.reduce((acc, serial) => {
       const key = serial.part_number_id;
       if (!acc[key]) acc[key] = [];

@@ -11,7 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Edit, Save, X, Plus, CalendarIcon } from "lucide-react";
 import { SerialInventory, SerialStatus } from "@/types";
 import { StatusBadge } from "./StatusBadge";
-import { useSerialStore } from "@/hooks/useSerialStore";
+import { useGlobalState } from "@/hooks/useGlobalState";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -34,7 +34,7 @@ export const SerialDetail = ({ serial: initialSerial, onClose }: SerialDetailPro
     }))
   });
   
-  const { updateSerial } = useSerialStore();
+  const { actions } = useGlobalState();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
@@ -96,7 +96,7 @@ export const SerialDetail = ({ serial: initialSerial, onClose }: SerialDetailPro
         updated_by: 'user'
       };
 
-      await updateSerial(updatedSerial);
+      await actions.updateSerial(updatedSerial);
       setSerial(updatedSerial);
       setIsEditing(false);
       
